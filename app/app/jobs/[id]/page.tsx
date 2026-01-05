@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getJobDetails, getJobLogs, stopJob } from '../../actions';
 import { useParams } from 'next/navigation';
+import { LogViewer } from '../../components/LogViewer';
 
 export default function JobPage() {
     const params = useParams();
@@ -73,16 +74,8 @@ export default function JobPage() {
             </div>
 
             <div className="flex-1 bg-black rounded-xl border border-white/10 overflow-hidden flex flex-col font-mono text-sm relative">
-                <div className="flex-1 overflow-y-auto p-4 space-y-1">
-                    {logs.map((log, i) => (
-                        <div key={i} className={`break-words ${log.type === 'error' ? 'text-red-400' : 'text-slate-300'}`}>
-                            {log?.type === 'message' || log?.type === 'text' ? (
-                                <span>{typeof log?.content === 'string' ? log.content : JSON.stringify(log)}</span>
-                            ) : (
-                                <span className="opacity-70">{JSON.stringify(log)}</span>
-                            )}
-                        </div>
-                    ))}
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                    <LogViewer logs={logs} />
                     <div ref={logEndRef} />
                 </div>
                 {job.status === 'running' && (
