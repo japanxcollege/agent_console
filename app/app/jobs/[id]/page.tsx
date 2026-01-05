@@ -15,10 +15,16 @@ export default function JobPage() {
     const [input, setInput] = useState('');
     const logEndRef = useRef<HTMLDivElement>(null);
 
-    const handleSendInput = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSendInput = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!input.trim()) return;
         await sendJobInput(id, input.trim());
+        setInput('');
+    };
+
+    const handleInterruptAndSend = async () => {
+        if (!input.trim()) return;
+        await sendJobInput(id, '!!INTERRUPT!!' + input.trim());
         setInput('');
     };
 
@@ -101,6 +107,14 @@ export default function JobPage() {
                                 placeholder="Send message to Claude..."
                                 className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
                             />
+                            <button
+                                type="button"
+                                onClick={handleInterruptAndSend}
+                                disabled={!input.trim()}
+                                className="bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-400 border border-red-500/20 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                            >
+                                Interrupt & Send
+                            </button>
                             <button
                                 type="submit"
                                 disabled={!input.trim()}

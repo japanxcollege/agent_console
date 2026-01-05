@@ -119,15 +119,25 @@ export async function executeJob(jobId: string, meta: any) {
         // Using lpop to get oldest message
         const inputMsg = await redis.lpop(KEYS.JOB_INPUT(jobId));
         if (inputMsg && typeof inputMsg === 'string') {
-            console.log(`Sending input to job ${jobId}: ${inputMsg}`);
+            let messageToSend = inputMsg;
+
+            // Check for interruption
+            if (inputMsg.startsWith('!!INTERRUPT!!')) {
+                console.log(`Interrupting job ${jobId} and sending new input...`);
+                child.kill('SIGINT');
+                // Remove prefix
+                messageToSend = inputMsg.replace('!!INTERRUPT!!', '');
+            }
+
+            console.log(`Sending input to job ${jobId}: ${messageToSend}`);
             // Claude Code expects inputs on stdin. 
             // If it's a prompt response, usually just the text + newline.
-            child.stdin.write(inputMsg + '\n');
+            child.stdin.write(messageToSend + '\n');
 
             // Log that we sent input
             await redis.rpush(KEYS.JOB_LOGS(jobId), JSON.stringify({
                 type: 'system',
-                content: `> User input: ${inputMsg}`
+                content: `> User input: ${messageToSend}`
             }));
         }
     }, 500); // Check every 500ms
