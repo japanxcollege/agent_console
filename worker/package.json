@@ -1,0 +1,22 @@
+{
+  "name": "agent-console-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.0",
+    "dotenv": "^16.4.5",
+    "glob": "^10.4.5",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
