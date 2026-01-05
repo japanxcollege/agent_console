@@ -82,7 +82,10 @@ export async function executeJob(jobId: string, meta: any) {
 
     // Write prompt to stdin
     child.stdin.write(prompt);
-    child.stdin.end();
+    // Write prompt to stdin
+    child.stdin.write(prompt);
+    // Do NOT end stdin immediately, keep it open for interactive mode
+    // child.stdin.end();
 
     child.stdout.on('data', async (data) => {
         const lines = data.toString().split('\n');
@@ -101,19 +104,37 @@ export async function executeJob(jobId: string, meta: any) {
         }
     });
 
-    // Handler for cancellation
-    const checkCancel = setInterval(async () => {
+    // Handler for cancellation and input
+    const checkInterval = setInterval(async () => {
+        // 1. Check for cancellation
         const control = await redis.hgetall(KEYS.JOB_CONTROL(jobId));
         if (control?.cancel === 'true') {
             child.kill('SIGINT');
-            clearInterval(checkCancel);
+            clearInterval(checkInterval);
             await redis.rpush(KEYS.JOB_LOGS(jobId), JSON.stringify({ type: 'system', content: 'Job cancelled by user.' }));
+            return;
         }
-    }, 1000);
+
+        // 2. Check for user input
+        // Using lpop to get oldest message
+        const inputMsg = await redis.lpop(KEYS.JOB_INPUT(jobId));
+        if (inputMsg && typeof inputMsg === 'string') {
+            console.log(`Sending input to job ${jobId}: ${inputMsg}`);
+            // Claude Code expects inputs on stdin. 
+            // If it's a prompt response, usually just the text + newline.
+            child.stdin.write(inputMsg + '\n');
+
+            // Log that we sent input
+            await redis.rpush(KEYS.JOB_LOGS(jobId), JSON.stringify({
+                type: 'system',
+                content: `> User input: ${inputMsg}`
+            }));
+        }
+    }, 500); // Check every 500ms
 
     return new Promise<void>((resolve, reject) => {
         child.on('close', async (code) => {
-            clearInterval(checkCancel);
+            clearInterval(checkInterval);
 
             // Post-execution: Capture artifacts
             try {
@@ -145,7 +166,7 @@ export async function executeJob(jobId: string, meta: any) {
         });
 
         child.on('error', async (err) => {
-            clearInterval(checkCancel);
+            clearInterval(checkInterval);
             await redis.hset(KEYS.JOB_META(jobId), { status: 'failed', error: err.message });
             resolve(); // Resolve to process next job
         });

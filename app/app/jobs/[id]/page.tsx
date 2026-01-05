@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { getJobDetails, getJobLogs, stopJob } from '../../actions';
+import { getJobDetails, getJobLogs, stopJob, sendJobInput } from '../../actions';
 import { useParams } from 'next/navigation';
 import { LogViewer } from '../../components/LogViewer';
 
@@ -12,7 +12,15 @@ export default function JobPage() {
     const [job, setJob] = useState<any>(null);
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [input, setInput] = useState('');
     const logEndRef = useRef<HTMLDivElement>(null);
+
+    const handleSendInput = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+        await sendJobInput(id, input.trim());
+        setInput('');
+    };
 
     const fetchData = async () => {
         const [meta, newLogs] = await Promise.all([
@@ -79,8 +87,28 @@ export default function JobPage() {
                     <div ref={logEndRef} />
                 </div>
                 {job.status === 'running' && (
-                    <div className="absolute bottom-4 right-4 text-xs bg-indigo-500 text-white px-2 py-1 rounded animate-pulse shadow-lg shadow-indigo-500/20">
+                    <div className="absolute bottom-20 right-4 text-xs bg-indigo-500 text-white px-2 py-1 rounded animate-pulse shadow-lg shadow-indigo-500/20">
                         Live
+                    </div>
+                )}
+                {job.status === 'running' && (
+                    <div className="p-4 bg-slate-900/50 border-t border-white/5">
+                        <form onSubmit={handleSendInput} className="flex gap-2">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Send message to Claude..."
+                                className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!input.trim()}
+                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                            >
+                                Send
+                            </button>
+                        </form>
                     </div>
                 )}
             </div>

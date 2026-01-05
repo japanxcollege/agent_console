@@ -61,6 +61,10 @@ export async function stopJob(id: string) {
     revalidatePath(`/jobs/${id}`);
 }
 
+export async function sendJobInput(id: string, message: string) {
+    await redis.rpush(KEYS.JOB_INPUT(id), message);
+}
+
 export async function getBrainIndex() {
     const indexStr = await redis.get<string>(KEYS.BRAIN_INDEX);
     if (!indexStr) return [];

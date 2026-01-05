@@ -17,8 +17,9 @@ export const KEYS = {
     REPOS: 'global:repos',
     JOBS_QUEUE: 'jobs:queue',
     JOB_META: (id: string) => `job:${id}:meta`,
-    JOB_LOGS: (id: string) => `job:${id}:events`,
+    JOB_LOGS: (id: string) => `job:${id}:logs`,
     JOB_ARTIFACTS: (id: string) => `job:${id}:artifacts`,
+    JOB_INPUT: (id: string) => `job:${id}:input`,
     JOB_CONTROL: (id: string) => `job:${id}:control`,
     BRAIN_INDEX: 'antigravity:brain:index',
 };
