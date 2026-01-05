@@ -76,8 +76,8 @@ export default function JobPage() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-1">
                     {logs.map((log, i) => (
                         <div key={i} className={`break-words ${log.type === 'error' ? 'text-red-400' : 'text-slate-300'}`}>
-                            {log.type === 'message' || log.type === 'text' ? (
-                                <span>{log.content}</span>
+                            {log?.type === 'message' || log?.type === 'text' ? (
+                                <span>{typeof log?.content === 'string' ? log.content : JSON.stringify(log)}</span>
                             ) : (
                                 <span className="opacity-70">{JSON.stringify(log)}</span>
                             )}
