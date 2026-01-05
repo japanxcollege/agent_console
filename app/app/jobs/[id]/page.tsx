@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { getJobDetails, getJobLogs, stopJob } from '../actions';
+import { getJobDetails, getJobLogs, stopJob } from '../../actions';
 import { useParams } from 'next/navigation';
 
 export default function JobPage() {
