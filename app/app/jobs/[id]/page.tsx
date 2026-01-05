@@ -57,6 +57,9 @@ export default function JobPage() {
     }
 
     return (
+    const [showInterrupt, setShowInterrupt] = useState(false);
+
+    return (
         <div className="h-[calc(100vh-140px)] flex flex-col">
             <div className="bg-slate-900/50 border border-white/5 rounded-xl p-6 mb-6">
                 <div className="flex justify-between items-start mb-4">
@@ -89,8 +92,17 @@ export default function JobPage() {
 
             <div className="flex-1 bg-black rounded-xl border border-white/10 overflow-hidden flex flex-col font-mono text-sm relative">
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                    <LogViewer logs={logs} />
-                    <div ref={logEndRef} />
+                    {logs.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-500"></div>
+                            <p>Waiting for logs...</p>
+                        </div>
+                    ) : (
+                        <>
+                            <LogViewer logs={logs} />
+                            <div ref={logEndRef} />
+                        </>
+                    )}
                 </div>
                 {job.status === 'running' && (
                     <div className="absolute bottom-20 right-4 text-xs bg-indigo-500 text-white px-2 py-1 rounded animate-pulse shadow-lg shadow-indigo-500/20">
@@ -99,7 +111,7 @@ export default function JobPage() {
                 )}
                 {job.status === 'running' && (
                     <div className="p-4 bg-slate-900/50 border-t border-white/5">
-                        <form onSubmit={handleSendInput} className="flex gap-2">
+                        <form onSubmit={handleSendInput} className="flex gap-2 relative">
                             <input
                                 type="text"
                                 value={input}
@@ -107,21 +119,40 @@ export default function JobPage() {
                                 placeholder="Send message to Claude..."
                                 className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
                             />
-                            <button
-                                type="button"
-                                onClick={handleInterruptAndSend}
-                                disabled={!input.trim()}
-                                className="bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-400 border border-red-500/20 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                            >
-                                Interrupt & Send
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={!input.trim()}
-                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                            >
-                                Send
-                            </button>
+
+                            <div className="flex items-center bg-indigo-600 rounded-lg overflow-hidden">
+                                <button
+                                    type="submit"
+                                    disabled={!input.trim()}
+                                    className="hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 font-medium transition-colors flex items-center gap-2"
+                                >
+                                    Send
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowInterrupt(!showInterrupt)}
+                                    className="h-full px-2 hover:bg-indigo-700 transition-colors border-l border-indigo-700 text-white"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transform transition-transform ${showInterrupt ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                            </div>
+
+                            {showInterrupt && (
+                                <div className="absolute bottom-full right-0 mb-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-20">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleInterruptAndSend();
+                                            setShowInterrupt(false);
+                                        }}
+                                        disabled={!input.trim()}
+                                        className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2 text-sm font-medium"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                        Interrupt & Send
+                                    </button>
+                                </div>
+                            )}
                         </form>
                     </div>
                 )}
