@@ -56,7 +56,6 @@ export default function JobPage() {
         return <div className="text-center py-20 text-red-500">Job not found</div>;
     }
 
-    return (
     const [showInterrupt, setShowInterrupt] = useState(false);
 
     return (
