@@ -13,6 +13,7 @@ export default function JobPage() {
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [input, setInput] = useState('');
+    const [showInterrupt, setShowInterrupt] = useState(false);
     const logEndRef = useRef<HTMLDivElement>(null);
 
     const handleSendInput = async (e?: React.FormEvent) => {
@@ -55,8 +56,6 @@ export default function JobPage() {
     if (!job) {
         return <div className="text-center py-20 text-red-500">Job not found</div>;
     }
-
-    const [showInterrupt, setShowInterrupt] = useState(false);
 
     return (
         <div className="h-[calc(100vh-140px)] flex flex-col">
